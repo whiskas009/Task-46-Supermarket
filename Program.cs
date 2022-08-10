@@ -21,10 +21,10 @@ namespace Task_46_Supermarket
 
         public BasketProducts BasketProducts;
 
-        public Client(List<Product> listPurchases, Random random)
+        public Client(Random random)
         {
             DepositMoneyRandomly(random);
-            BasketProducts = new BasketProducts(listPurchases);
+            BasketProducts = new BasketProducts(random);
         }
 
         private void DepositMoneyRandomly(Random random)
@@ -39,9 +39,9 @@ namespace Task_46_Supermarket
     {
         public List<Product> Products = new List<Product>();
 
-        public BasketProducts(List<Product> listPurchases)
+        public BasketProducts(Random random)
         {
-            Products = listPurchases;
+            FillBasket(random);
         }
 
         public void RemoveRandomProduct()
@@ -60,6 +60,18 @@ namespace Task_46_Supermarket
                 Console.WriteLine($"{Products[i].Name} - {Products[i].Cost} руб.");
             }
         }
+
+        private void FillBasket(Random random)
+        {
+            int minLimit = 0;
+            int maxLimit = 10;
+            int numberProducts = random.Next(minLimit, maxLimit);
+
+            for (int i = 0; i < numberProducts; i++)
+            {
+                Products.Add(new Product(random));
+            }
+        }
     }
 
     class Product
@@ -68,10 +80,31 @@ namespace Task_46_Supermarket
 
         public int Cost { get; private set; }
 
-        public Product(string name, int cost)
+        private Dictionary<string, int> _typesProducts = new Dictionary<string, int>();
+
+        public Product(Random random)
         {
-            Name = name;
-            Cost = cost;
+            CreateAssortment();
+            AssignType(random);
+        }
+
+        private void AssignType(Random random)
+        {
+            int minLimit = 0;
+            int indexTypesProduct = random.Next(minLimit, _typesProducts.Count);
+            Name = _typesProducts.ElementAt(indexTypesProduct).Key;
+            Cost = _typesProducts.ElementAt(indexTypesProduct).Value;
+        }
+
+        private void CreateAssortment()
+        {
+            _typesProducts.Add("Хлеб", 20);
+            _typesProducts.Add("Молоко", 55);
+            _typesProducts.Add("Печенье", 32);
+            _typesProducts.Add("Мясо", 234);
+            _typesProducts.Add("Сыр", 134);
+            _typesProducts.Add("Картошка", 45);
+            _typesProducts.Add("Зелень", 15);
         }
     }
 
@@ -79,14 +112,7 @@ namespace Task_46_Supermarket
     {
         private Queue<Client> _clients = new Queue<Client>();
 
-        private Dictionary<string, int> _typesProducts = new Dictionary<string, int>();
-
         private Random _random = new Random();
-
-        public Supermarket()
-        {
-            CreateAssortment();
-        }
 
         public void StartGame()
         {
@@ -188,7 +214,7 @@ namespace Task_46_Supermarket
 
             for (int i = 0; i < numberClients; i++)
             {
-                _clients.Enqueue(new Client(CreateListPurchases(), _random));
+                _clients.Enqueue(new Client(_random));
             }
 
             Console.WriteLine($"\nОчередь создана!\n");
@@ -206,31 +232,5 @@ namespace Task_46_Supermarket
             return amount;
         }
 
-        private void CreateAssortment()
-        {
-            _typesProducts.Add("Хлеб", 20);
-            _typesProducts.Add("Молоко", 55);
-            _typesProducts.Add("Печенье", 32);
-            _typesProducts.Add("Мясо", 234);
-            _typesProducts.Add("Сыр", 134);
-            _typesProducts.Add("Картошка", 45);
-            _typesProducts.Add("Зелень", 15);
-        }
-
-        private List<Product> CreateListPurchases()
-        {
-            List<Product> listPurchases = new List<Product>();
-            int minLimit = 0;
-            int maxLimit = 10;
-            int numberPurchases = _random.Next(minLimit, maxLimit);
-            
-            for (int i = 0; i < numberPurchases; i++)
-            {
-                int indexTypePurchases = _random.Next(minLimit, _typesProducts.Count);
-                listPurchases.Add(new Product(_typesProducts.ElementAt(indexTypePurchases).Key, _typesProducts.ElementAt(indexTypePurchases).Value));
-            }
-
-            return listPurchases;
-        }
     }
 }
