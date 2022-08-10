@@ -10,18 +10,19 @@ namespace Task_46_Supermarket
     {
         static void Main(string[] args)
         {
-
+            Supermarket supermarket = new Supermarket();
+            supermarket.StartGame();
         }
     }
 
     class Client
     {
         public int Money { get; private set; }
+        public BasketProducts _basketProducts = new BasketProducts();
 
         public Client()
         {
             DepositMoneyRandomly();
-            BasketProducts _basketProducts = new BasketProducts();
         }
 
         private void DepositMoneyRandomly()
@@ -36,6 +37,11 @@ namespace Task_46_Supermarket
     class BasketProducts
     {
         public List<Product> _products = new List<Product>();
+
+        public BasketProducts()
+        {
+            FillProducts();
+        }
 
         private void FillProducts()
         {
@@ -98,6 +104,45 @@ namespace Task_46_Supermarket
     {
         private Queue<Client> _clients = new Queue<Client>();
 
+        public void StartGame()
+        {
+            bool isWork = true;
+
+            CreateQueue();
+            ShowPurchaseInfo();
+
+            while (isWork == true)
+            {
+                Console.WriteLine("1.   \n2. Начать бой \n2. Выход");
+
+                switch (Console.ReadLine())
+                {
+                    case "1":
+
+                        break;
+
+                    case "2":
+
+                        break;
+
+                    case "3":
+                        isWork = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("\nНеккоректный ввод\n");
+                        break;
+                }
+            }
+        }
+
+        private void ShowPurchaseInfo()
+        {
+            Console.WriteLine("\nНовый клиент подошёл на кассу\n");
+            Console.WriteLine($"\nОбщая сумма покупки: {CalculatePurchaseAmount()}");
+            Console.WriteLine($"Денег у клиента {_clients.Peek().Money}");
+        }
+
         private void CreateQueue()
         {
             int numberClients = 10;
@@ -110,14 +155,16 @@ namespace Task_46_Supermarket
             Console.WriteLine($"\nОчередь создана в колличестве {numberClients} человек\n");
         }
 
-        private void CalculatePurchaseAmount()
+        private int CalculatePurchaseAmount()
         {
             int amount = 0;
 
-            for (int i = 0; _clients.Count > 0; i++)
+            for (int i = 0; i < _clients.Peek()._basketProducts._products.Count; i++)
             {
-                _clients.Peek().
+                amount += _clients.Peek()._basketProducts._products[i].Cost;
             }
+
+            return amount;
         }
     }
 }
