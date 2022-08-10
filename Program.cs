@@ -19,12 +19,12 @@ namespace Task_46_Supermarket
     {
         public int Money { get; private set; }
 
-        public BasketProducts _basketProducts;
+        public BasketProducts BasketProducts;
 
         public Client(List<Product> listPurchases, Random random)
         {
             DepositMoneyRandomly(random);
-            _basketProducts = new BasketProducts(listPurchases);
+            BasketProducts = new BasketProducts(listPurchases);
         }
 
         private void DepositMoneyRandomly(Random random)
@@ -37,27 +37,27 @@ namespace Task_46_Supermarket
 
     class BasketProducts
     {
-        public List<Product> _products = new List<Product>();
+        public List<Product> Products = new List<Product>();
 
         public BasketProducts(List<Product> listPurchases)
         {
-            _products = listPurchases;
+            Products = listPurchases;
         }
 
         public void RemoveRandomProduct()
         {
             Random random = new Random();
             int minLimit = 0;
-            int indexDelete = random.Next(minLimit, _products.Count);
-            Console.WriteLine($"\n{_products[indexDelete].Name} убрано из корзины\n");
-            _products.RemoveAt(indexDelete);
+            int indexDelete = random.Next(minLimit, Products.Count);
+            Console.WriteLine($"\n{Products[indexDelete].Name} убрано из корзины\n");
+            Products.RemoveAt(indexDelete);
         }
 
         public void ShowContent()
         {
-            for (int i = 0; i < _products.Count; i++)
+            for (int i = 0; i < Products.Count; i++)
             {
-                Console.WriteLine($"{_products[i].Name} - {_products[i].Cost} руб.");
+                Console.WriteLine($"{Products[i].Name} - {Products[i].Cost} руб.");
             }
         }
     }
@@ -150,7 +150,7 @@ namespace Task_46_Supermarket
 
         private void ShowPurchaseInformation()
         {
-            _clients.Peek()._basketProducts.ShowContent();
+            _clients.Peek().BasketProducts.ShowContent();
             Console.WriteLine($"\nОбщая сумма покупки: {CalculatePurchaseAmount()}");
             Console.WriteLine($"Денег у клиента {_clients.Peek().Money}");
         }
@@ -174,7 +174,7 @@ namespace Task_46_Supermarket
         {
             if (CalculatePurchaseAmount() > _clients.Peek().Money)
             {
-                _clients.Peek()._basketProducts.RemoveRandomProduct();
+                _clients.Peek().BasketProducts.RemoveRandomProduct();
             }
             else
             {
@@ -198,9 +198,9 @@ namespace Task_46_Supermarket
         {
             int amount = 0;
 
-            for (int i = 0; i < _clients.Peek()._basketProducts._products.Count; i++)
+            for (int i = 0; i < _clients.Peek().BasketProducts.Products.Count; i++)
             {
-                amount += _clients.Peek()._basketProducts._products[i].Cost;
+                amount += _clients.Peek().BasketProducts.Products[i].Cost;
             }
 
             return amount;
