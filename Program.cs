@@ -18,11 +18,10 @@ namespace Task_46_Supermarket
     {
         public int Money { get; private set; }
 
-        public BasketProducts _basketProducts = new BasketProducts();
-
         public Client()
         {
             DepositMoneyRandomly();
+            BasketProducts _basketProducts = new BasketProducts();
         }
 
         private void DepositMoneyRandomly()
@@ -36,11 +35,19 @@ namespace Task_46_Supermarket
 
     class BasketProducts
     {
-        private List<Product> _products = new List<Product>();
+        public List<Product> _products = new List<Product>();
 
-        private void PutProduct()
+        private void FillProducts()
         {
-            _products.Add(new Product());
+            Random random = new Random();
+            int minLimit = 0;
+            int maxLimit = 10;
+            int numberProducts = random.Next(minLimit, maxLimit);
+
+            for (int i = 0; i < numberProducts; i++)
+			{
+                _products.Add(new Product());
+			}
         }
 
         private void RemoveRandomProduct()
@@ -66,7 +73,7 @@ namespace Task_46_Supermarket
             AssignType();
         }
 
-        public void AssignType()
+        private void AssignType()
         {
             Random random = new Random();
             int minLimit = 0;
@@ -107,9 +114,9 @@ namespace Task_46_Supermarket
         {
             int amount = 0;
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; _clients.Count > 0; i++)
             {
-
+                _clients.Peek().
             }
         }
     }
