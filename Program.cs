@@ -18,16 +18,17 @@ namespace Task_46_Supermarket
     class Client
     {
         public int Money { get; private set; }
-        public BasketProducts _basketProducts = new BasketProducts();
 
-        public Client()
+        public BasketProducts _basketProducts;
+
+        public Client(List<Product> listPurchases, Random random)
         {
-            DepositMoneyRandomly();
+            DepositMoneyRandomly(random);
+            _basketProducts = new BasketProducts(listPurchases);
         }
 
-        private void DepositMoneyRandomly()
+        private void DepositMoneyRandomly(Random random)
         {
-            Random random = new Random();
             int minLimit = 0;
             int maxLimit = 1000;
             Money = random.Next(minLimit, maxLimit);
@@ -38,30 +39,26 @@ namespace Task_46_Supermarket
     {
         public List<Product> _products = new List<Product>();
 
-        public BasketProducts()
+        public BasketProducts(List<Product> listPurchases)
         {
-            FillProducts();
+            _products = listPurchases;
         }
 
-        private void FillProducts()
-        {
-            Random random = new Random();
-            int minLimit = 0;
-            int maxLimit = 10;
-            int numberProducts = random.Next(minLimit, maxLimit);
-
-            for (int i = 0; i < numberProducts; i++)
-			{
-                _products.Add(new Product());
-			}
-        }
-
-        private void RemoveRandomProduct()
+        public void RemoveRandomProduct()
         {
             Random random = new Random();
             int minLimit = 0;
             int indexDelete = random.Next(minLimit, _products.Count);
+            Console.WriteLine($"\n{_products[indexDelete].Name} убрано из корзины\n");
             _products.RemoveAt(indexDelete);
+        }
+
+        public void ShowContent()
+        {
+            for (int i = 0; i < _products.Count; i++)
+            {
+                Console.WriteLine($"{_products[i].Name} - {_products[i].Cost} руб.");
+            }
         }
     }
 
@@ -71,32 +68,10 @@ namespace Task_46_Supermarket
 
         public int Cost { get; private set; }
 
-        private Dictionary<string, int> _typesProducts = new Dictionary<string, int>();
-
-        public Product()
+        public Product(string name, int cost)
         {
-            CreateAssortment();
-            AssignType();
-        }
-
-        private void AssignType()
-        {
-            Random random = new Random();
-            int minLimit = 0;
-            int index = random.Next(minLimit, _typesProducts.Count);
-            Name = _typesProducts.ElementAt(index).Key;
-            Cost = _typesProducts.ElementAt(index).Value;
-        }
-
-        private void CreateAssortment()
-        {
-            _typesProducts.Add("Хлеб", 20);
-            _typesProducts.Add("Молоко", 55);
-            _typesProducts.Add("Печенье", 32);
-            _typesProducts.Add("Мясо", 234);
-            _typesProducts.Add("Сыр", 134);
-            _typesProducts.Add("Картошка", 45);
-            _typesProducts.Add("Зелень", 15);
+            Name = name;
+            Cost = cost;
         }
     }
 
@@ -104,28 +79,33 @@ namespace Task_46_Supermarket
     {
         private Queue<Client> _clients = new Queue<Client>();
 
+        private Dictionary<string, int> _typesProducts = new Dictionary<string, int>();
+
+        private Random _random = new Random();
+
+        public Supermarket()
+        {
+            CreateAssortment();
+        }
+
         public void StartGame()
         {
             bool isWork = true;
-
             CreateQueue();
-            ShowPurchaseInfo();
 
             while (isWork == true)
             {
-                Console.WriteLine("1.   \n2. Начать бой \n2. Выход");
+                Console.WriteLine($"\nДлина очереди: {_clients.Count} человек\n");
+                Console.WriteLine("\nНовый клиент подошёл на кассу\n");
+                Console.WriteLine("\n1. Начать работу \n2. Выход");
 
                 switch (Console.ReadLine())
                 {
                     case "1":
-
+                        ServeCustomer();
                         break;
 
                     case "2":
-
-                        break;
-
-                    case "3":
                         isWork = false;
                         break;
 
@@ -136,11 +116,70 @@ namespace Task_46_Supermarket
             }
         }
 
-        private void ShowPurchaseInfo()
+        private void ServeCustomer()
         {
-            Console.WriteLine("\nНовый клиент подошёл на кассу\n");
+            bool isWork = true;
+
+            while (isWork == true)
+            {
+                ShowPurchaseInformation();
+
+                Console.WriteLine($"\n1. Убрать товар из корзины \n2. Принять оплату");
+
+                switch (Console.ReadLine())
+                {
+                    case "1":
+                        CheckPossibilityPayment();
+                        break;
+
+                    case "2":
+                        AcceptPayment();
+                        break;
+
+                    default:
+                        Console.WriteLine("\nНеккоректный ввод\n");
+                        break;
+                }
+
+                if (_clients.Count - 1 < 0)
+                {
+                    isWork = false;
+                }
+            }
+        }
+
+        private void ShowPurchaseInformation()
+        {
+            _clients.Peek()._basketProducts.ShowContent();
             Console.WriteLine($"\nОбщая сумма покупки: {CalculatePurchaseAmount()}");
             Console.WriteLine($"Денег у клиента {_clients.Peek().Money}");
+        }
+
+        private void AcceptPayment()
+        {
+            if (CalculatePurchaseAmount() < _clients.Peek().Money)
+            {
+                _clients.Dequeue();
+                Console.WriteLine("\nКлиент обслужен!\n");
+                Console.WriteLine($"\nДлина очереди: {_clients.Count} человек\n");
+                Console.WriteLine("\nНовый клиент подошёл на кассу\n");
+            }
+            else
+            {
+                Console.WriteLine("\nУ клиента недостаточно денег, чтобы оплатить покупку\n");
+            }
+        }
+
+        private void CheckPossibilityPayment()
+        {
+            if (CalculatePurchaseAmount() > _clients.Peek().Money)
+            {
+                _clients.Peek()._basketProducts.RemoveRandomProduct();
+            }
+            else
+            {
+                Console.WriteLine("\nУ клиента достаточно денег, чтобы оплатить покупку!\n");
+            }
         }
 
         private void CreateQueue()
@@ -149,10 +188,10 @@ namespace Task_46_Supermarket
 
             for (int i = 0; i < numberClients; i++)
             {
-                _clients.Enqueue(new Client());
+                _clients.Enqueue(new Client(CreateListPurchases(), _random));
             }
 
-            Console.WriteLine($"\nОчередь создана в колличестве {numberClients} человек\n");
+            Console.WriteLine($"\nОчередь создана!\n");
         }
 
         private int CalculatePurchaseAmount()
@@ -165,6 +204,33 @@ namespace Task_46_Supermarket
             }
 
             return amount;
+        }
+
+        private void CreateAssortment()
+        {
+            _typesProducts.Add("Хлеб", 20);
+            _typesProducts.Add("Молоко", 55);
+            _typesProducts.Add("Печенье", 32);
+            _typesProducts.Add("Мясо", 234);
+            _typesProducts.Add("Сыр", 134);
+            _typesProducts.Add("Картошка", 45);
+            _typesProducts.Add("Зелень", 15);
+        }
+
+        private List<Product> CreateListPurchases()
+        {
+            List<Product> listPurchases = new List<Product>();
+            int minLimit = 0;
+            int maxLimit = 10;
+            int numberPurchases = _random.Next(minLimit, maxLimit);
+            
+            for (int i = 0; i < numberPurchases; i++)
+            {
+                int indexTypePurchases = _random.Next(minLimit, _typesProducts.Count);
+                listPurchases.Add(new Product(_typesProducts.ElementAt(indexTypePurchases).Key, _typesProducts.ElementAt(indexTypePurchases).Value));
+            }
+
+            return listPurchases;
         }
     }
 }
