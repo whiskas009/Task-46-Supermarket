@@ -257,6 +257,4 @@ namespace Task_46_Supermarket
             return products;
         }
     }
-
-    //11
 }
