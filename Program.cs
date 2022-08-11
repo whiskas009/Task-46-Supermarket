@@ -17,9 +17,9 @@ namespace Task_46_Supermarket
 
     class Client
     {
-        public int Money { get; private set; }
-
         private Basket _basket;
+
+        public int Money { get; private set; }
 
         public Client(Random random, List<Product> products)
         {
