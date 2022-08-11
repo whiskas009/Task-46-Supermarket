@@ -19,12 +19,32 @@ namespace Task_46_Supermarket
     {
         public int Money { get; private set; }
 
-        public BasketProducts BasketProducts { get; private set; }
+        private Basket _basket;
 
-        public Client(Random random)
+        public Client(Random random, List<Product> products)
         {
             DepositMoneyRandomly(random);
-            BasketProducts = new BasketProducts(random);
+            _basket = new Basket(products);
+        }
+
+        public void ViewBasket()
+        {
+            _basket.ShowContent();
+        }
+
+        public void DeleteProductBasket()
+        {
+            _basket.RemoveRandomProduct();
+        }
+
+        public int GetCountNumberProducts()
+        {
+            return _basket.ReturnNumberProducts();
+        }
+
+        public int GetCostProduct(int indexProduct)
+        {
+            return _basket.ReturnCostProduct(indexProduct);
         }
 
         private void DepositMoneyRandomly(Random random)
@@ -35,13 +55,13 @@ namespace Task_46_Supermarket
         }
     }
 
-    class BasketProducts
+    class Basket
     {
         private List<Product> _products = new List<Product>();
 
-        public BasketProducts(Random random)
+        public Basket(List<Product> products)
         {
-            FillBasket(random);
+            _products = products;
         }
 
         public void RemoveRandomProduct()
@@ -61,60 +81,27 @@ namespace Task_46_Supermarket
             }
         }
 
-        public int CountNumberProducts()
+        public int ReturnNumberProducts()
         {
             return _products.Count;
         }
 
-        public int GetCostProduct(int indexProduct)
+        public int ReturnCostProduct(int indexProduct)
         {
             return _products[indexProduct].Cost;
-        }
-
-        private void FillBasket(Random random)
-        {
-            int minLimit = 0;
-            int maxLimit = 10;
-            int numberProducts = random.Next(minLimit, maxLimit);
-
-            for (int i = 0; i < numberProducts; i++)
-            {
-                _products.Add(new Product(random));
-            }
         }
     }
 
     class Product
     {
-        private Dictionary<string, int> _typesProducts = new Dictionary<string, int>();
-
         public string Name { get; private set; }
 
         public int Cost { get; private set; }
 
-        public Product(Random random)
+        public Product(string name, int cost)
         {
-            AddProductType();
-            AssignType(random);
-        }
-
-        private void AssignType(Random random)
-        {
-            int minLimit = 0;
-            int indexTypesProduct = random.Next(minLimit, _typesProducts.Count);
-            Name = _typesProducts.ElementAt(indexTypesProduct).Key;
-            Cost = _typesProducts.ElementAt(indexTypesProduct).Value;
-        }
-
-        private void AddProductType()
-        {
-            _typesProducts.Add("Хлеб", 20);
-            _typesProducts.Add("Молоко", 55);
-            _typesProducts.Add("Печенье", 32);
-            _typesProducts.Add("Мясо", 234);
-            _typesProducts.Add("Сыр", 134);
-            _typesProducts.Add("Картошка", 45);
-            _typesProducts.Add("Зелень", 15);
+            Name = name;
+            Cost = cost;
         }
     }
 
@@ -122,7 +109,14 @@ namespace Task_46_Supermarket
     {
         private Queue<Client> _clients = new Queue<Client>();
 
+        private Dictionary<string, int> _typesProducts = new Dictionary<string, int>();
+
         private Random _random = new Random();
+
+        public Supermarket()
+        {
+            AddTypeProduct();
+        }
 
         public void StartGame()
         {
@@ -138,7 +132,7 @@ namespace Task_46_Supermarket
                 switch (Console.ReadLine())
                 {
                     case "1":
-                        ServeCustomer();
+                        ServeCustomers();
                         break;
 
                     case "2":
@@ -152,11 +146,9 @@ namespace Task_46_Supermarket
             }
         }
 
-        private void ServeCustomer()
+        private void ServeCustomers()
         {
-            bool isWork = true;
-
-            while (isWork == true)
+            while (_clients.Count < 0)
             {
                 ShowPurchaseInformation();
 
@@ -165,7 +157,7 @@ namespace Task_46_Supermarket
                 switch (Console.ReadLine())
                 {
                     case "1":
-                        CheckPossibilityPayment();
+                        IdentifyPossibilityPayment();
                         break;
 
                     case "2":
@@ -176,17 +168,12 @@ namespace Task_46_Supermarket
                         Console.WriteLine("\nНеккоректный ввод\n");
                         break;
                 }
-
-                if (_clients.Count < 0)
-                {
-                    isWork = false;
-                }
             }
         }
 
         private void ShowPurchaseInformation()
         {
-            _clients.Peek().BasketProducts.ShowContent();
+            _clients.Peek().ViewBasket();
             Console.WriteLine($"\nОбщая сумма покупки: {CalculatePurchaseAmount()}");
             Console.WriteLine($"Денег у клиента {_clients.Peek().Money}");
         }
@@ -206,11 +193,11 @@ namespace Task_46_Supermarket
             }
         }
 
-        private void CheckPossibilityPayment()
+        private void IdentifyPossibilityPayment()
         {
             if (CalculatePurchaseAmount() > _clients.Peek().Money)
             {
-                _clients.Peek().BasketProducts.RemoveRandomProduct();
+                _clients.Peek().DeleteProductBasket();
             }
             else
             {
@@ -224,7 +211,7 @@ namespace Task_46_Supermarket
 
             for (int i = 0; i < numberClients; i++)
             {
-                _clients.Enqueue(new Client(_random));
+                _clients.Enqueue(new Client(_random, CreateListProduct()));
             }
 
             Console.WriteLine($"\nОчередь создана!\n");
@@ -234,12 +221,40 @@ namespace Task_46_Supermarket
         {
             int amount = 0;
 
-            for (int i = 0; i < _clients.Peek().BasketProducts.CountNumberProducts(); i++)
+            for (int i = 0; i < _clients.Peek().GetCountNumberProducts(); i++)
             {
-                amount += _clients.Peek().BasketProducts.GetCostProduct(i);
+                amount += _clients.Peek().GetCostProduct(i);
             }
 
             return amount;
+        }
+
+        private void AddTypeProduct()
+        {
+            _typesProducts.Add("Хлеб", 20);
+            _typesProducts.Add("Молоко", 55);
+            _typesProducts.Add("Печенье", 32);
+            _typesProducts.Add("Мясо", 234);
+            _typesProducts.Add("Сыр", 134);
+            _typesProducts.Add("Картошка", 45);
+            _typesProducts.Add("Зелень", 15);
+        }
+
+        private List<Product> CreateListProduct()
+        {
+            List<Product> products = new List<Product>();
+            int minLimit = 0;
+            int maxLimit = 10;
+            int indexTypesProduct;
+            int numberProducts = _random.Next(minLimit, maxLimit);
+
+            for (int i = 0; i < numberProducts; i++)
+            {
+                indexTypesProduct = _random.Next(minLimit, _typesProducts.Count);
+                products.Add(new Product(_typesProducts.ElementAt(indexTypesProduct).Key, _typesProducts.ElementAt(indexTypesProduct).Value));
+            }
+
+            return products;
         }
     }
 }
