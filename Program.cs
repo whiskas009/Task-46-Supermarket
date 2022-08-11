@@ -19,7 +19,7 @@ namespace Task_46_Supermarket
     {
         public int Money { get; private set; }
 
-        public BasketProducts BasketProducts;
+        public BasketProducts BasketProducts { get; private set; }
 
         public Client(Random random)
         {
@@ -37,7 +37,7 @@ namespace Task_46_Supermarket
 
     class BasketProducts
     {
-        public List<Product> Products = new List<Product>();
+        private List<Product> _products = new List<Product>();
 
         public BasketProducts(Random random)
         {
@@ -48,17 +48,27 @@ namespace Task_46_Supermarket
         {
             Random random = new Random();
             int minLimit = 0;
-            int indexDelete = random.Next(minLimit, Products.Count);
-            Console.WriteLine($"\n{Products[indexDelete].Name} убрано из корзины\n");
-            Products.RemoveAt(indexDelete);
+            int indexDelete = random.Next(minLimit, _products.Count);
+            Console.WriteLine($"\n{_products[indexDelete].Name} убрано из корзины\n");
+            _products.RemoveAt(indexDelete);
         }
 
         public void ShowContent()
         {
-            for (int i = 0; i < Products.Count; i++)
+            for (int i = 0; i < _products.Count; i++)
             {
-                Console.WriteLine($"{Products[i].Name} - {Products[i].Cost} руб.");
+                Console.WriteLine($"{_products[i].Name} - {_products[i].Cost} руб.");
             }
+        }
+
+        public int CountNumberProducts()
+        {
+            return _products.Count;
+        }
+
+        public int GetCostProduct(int indexProduct)
+        {
+            return _products[indexProduct].Cost;
         }
 
         private void FillBasket(Random random)
@@ -69,22 +79,22 @@ namespace Task_46_Supermarket
 
             for (int i = 0; i < numberProducts; i++)
             {
-                Products.Add(new Product(random));
+                _products.Add(new Product(random));
             }
         }
     }
 
     class Product
     {
+        private Dictionary<string, int> _typesProducts = new Dictionary<string, int>();
+
         public string Name { get; private set; }
 
         public int Cost { get; private set; }
 
-        private Dictionary<string, int> _typesProducts = new Dictionary<string, int>();
-
         public Product(Random random)
         {
-            CreateAssortment();
+            AddProductType();
             AssignType(random);
         }
 
@@ -96,7 +106,7 @@ namespace Task_46_Supermarket
             Cost = _typesProducts.ElementAt(indexTypesProduct).Value;
         }
 
-        private void CreateAssortment()
+        private void AddProductType()
         {
             _typesProducts.Add("Хлеб", 20);
             _typesProducts.Add("Молоко", 55);
@@ -167,7 +177,7 @@ namespace Task_46_Supermarket
                         break;
                 }
 
-                if (_clients.Count - 1 < 0)
+                if (_clients.Count < 0)
                 {
                     isWork = false;
                 }
@@ -224,13 +234,12 @@ namespace Task_46_Supermarket
         {
             int amount = 0;
 
-            for (int i = 0; i < _clients.Peek().BasketProducts.Products.Count; i++)
+            for (int i = 0; i < _clients.Peek().BasketProducts.CountNumberProducts(); i++)
             {
-                amount += _clients.Peek().BasketProducts.Products[i].Cost;
+                amount += _clients.Peek().BasketProducts.GetCostProduct(i);
             }
 
             return amount;
         }
-
     }
 }
